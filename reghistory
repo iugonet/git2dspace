@@ -1,0 +1,228 @@
+#!/bin/bash
+# ----------------------------------------------------------------------------------- #
+#  reghistory for IUGONET ver 0.10
+#  Released on 2013.04.09, STEL, N.UMEMURA
+# ----------------------------------------------------------------------------------- #
+#  -- INTRODUCTION --
+#  This Script Manage the Regist History.
+#
+#  -- HOW TO RUN --
+#  Run this command.
+#  $ ./reghistory [-a|--all] [--repositorycode REPOSIROTY_CODE] [--limit NUM] [-h|--help]
+#  Options:
+#    See Help. ($ ./reghistory -h)
+#
+#  -- MORE DETAILS --
+#  See Operation Manual or Development Manual.
+#
+# ----------------------------------------------------------------------------------- #
+#
+
+#### [START] Define ###################################################################
+
+#### Invariable Parameters ####
+## Env
+SRC_DIR=${G2D_HOME}'/src'
+SRC_RUBY=${SRC_DIR}'/ruby'
+SRC_SHELL=${SRC_DIR}'/shell'
+#PID_FILE='g2d.pid'
+## Variables
+EXECCODE='0'
+EXITSTATUS='0'
+OFFSET='0'    ## Default Value of Number to Display
+LIMIT='10'    ## Default Value of Number to Display
+## EXECCODE (CONST VARIABLES)
+GET_ALL='5002101'
+GET_NOTDELETED='5002102'
+GET_RECENTONE='5002103'
+GET_FROM_REPOSITORYCODE='5002104'
+DELETE='5002301'
+ENABLE='5002302'
+## Utils
+CDS=${SRC_SHELL}'/lib/CreateDate.sh'
+
+#### Function ####
+_help() {
+  echo `${CDS}`' ###HELP> Usage:'
+  echo `${CDS}`' ###HELP>   $ ./reghistory [-a|--all] [--repositorycode REPOSITORY_CODE] [--limit NUM] [-h|--help]'
+  echo `${CDS}`' ###HELP> Options:'
+  echo `${CDS}`' ###HELP>   -a, --all                           : Show All the Registration Histories.'
+  echo `${CDS}`' ###HELP>   --repositorycode [REPOSITORY_CODE]  : Show the Registration History of the Repository.'
+  echo `${CDS}`' ###HELP>   --limit [NUM]                       : Number to Display (Default = 10).'
+  echo `${CDS}`' ###HELP>   -h, --help                          : Show Help.'
+  echo `${CDS}`' ###HELP> Others:'
+  echo `${CDS}`' ###HELP>   See Operation Maunal for Details.'
+  echo `${CDS}`' ###HELP> '
+}
+_help_admin() {
+  echo `${CDS}`' ###HELP> Usage:'
+  echo `${CDS}`' ###HELP>   $ ./reghistory [-a|--all] [--admin] [--repositorycode REPOSITORY_CODE] [--disable REGIST_ID] [--enable REGIST_ID] [--limit NUM] [-h|--help] [--help-admin]'
+  echo `${CDS}`' ###HELP> Options (*: For Administrators Only):'
+  echo `${CDS}`' ###HELP>   -a, --all                           : Show All the Registration Histories (Expect Deleted Records).'
+  echo `${CDS}`' ###HELP> * --admin                             : Show All the Registration Histories (Include Deleted Records).'
+  echo `${CDS}`' ###HELP>   --repositorycode [REPOSITORY_CODE]  : Show the Registration History of the Repository.'
+  echo `${CDS}`' ###HELP> * --disable [REGIST_ID]               : Disable the Regist History (DEL_FLAG --> 9).'
+  echo `${CDS}`' ###HELP> * --enable [REGIST_ID]                : Enable the Regist History (DEL_FLAG --> 0).'
+  echo `${CDS}`' ###HELP>   --limit [NUM]                       : Number to Display (Default = 10).'
+  echo `${CDS}`' ###HELP>   -h, --help                          : Show Help (For Operators).'
+  echo `${CDS}`' ###HELP> * --help-admin                        : Show Help (For Administrators).'
+  echo `${CDS}`' ###HELP> Others:'
+  echo `${CDS}`' ###HELP>   See Operation Maunal for Details.'
+  echo `${CDS}`' ###HELP> '
+}
+_error() {
+  echo `${CDS}`' !!ERROR> Progam Exit. See Operation Manual.'
+  echo `${CDS}`' !!ERROR> '
+}
+_end() {
+  echo `${CDS}`' ###INFO> '
+}
+_exit0() {
+  exit 0
+}
+_exit1() {
+  exit 1
+}
+
+
+#### [START] Get Args #################################################################
+
+#### Get Args ####
+ARGS=`getopt -o :ah -l all -l admin -l repositorycode: -l limit: -l disable: -l enable: -l help -l help-admin -- "$@"`
+
+#### Check Args ####
+## Arg Error --> exit 1
+if [ $? -ne 0 ]; then
+  echo `${CDS}`' !!ERROR> Invalid Argument.'
+  _help
+  _exit1
+fi
+
+#### ReSet Args ####
+eval set -- $ARGS
+
+#### Catch Args ####
+until [ $1 = "--" ];
+do
+  case $1 in
+  ## Case: Show All the Registration Histories (For Operators)
+  -a|--all)
+    echo `${CDS}`' ###INFO> ######## Show Registration Histories (All) ########'
+    EXECCODE=${GET_NOTDELETED}
+    ;;
+  ## Case: Show All the Registration Histories (For Administrators)
+  --admin)
+    echo `${CDS}`' ###INFO> ######## Show Registration Histories (For Administrators) ########'
+    EXECCODE=${GET_ALL}
+    ;;
+  ## Case: Show the Registration History of the Repository.
+  --repositorycode)
+    echo `${CDS}`' ###INFO> ######## Show Registration History (One Repository) ########'
+    OPTVALUE=$2
+    EXECCODE=${GET_FROM_REPOSITORYCODE}
+    ;;
+  ## Case: Set Number to Display.
+  --limit)
+    LIMIT=$2  ## Overwrite
+    if [ "${LIMIT}" = "all" -o "${LIMIT}" = "ALL" ]; then
+      OFFSET='0'
+    fi 
+    ;;
+  ## Case: Disable the Regist History, DEL_FLAG --> 9 (For Administrators)
+  --disable)
+    echo `${CDS}`' ###INFO> ######## Disable the Regist History (For Administrators) ########'
+    OPTVALUE=$2
+    EXECCODE=${DELETE}
+    ;;
+  ## Case: Enable the Regist History, DEL_FLAG --> 0 (For Administrators)
+  --enable)
+    echo `${CDS}`' ###INFO> ######## Enable the Regist History (For Administrators) ########'
+    OPTVALUE=$2
+    EXECCODE=${ENABLE}
+    ;;
+  ## Case: Help (For Operators)
+  -h|--help)
+    echo `${CDS}`' ###INFO> ######## Show Registration History (Help) ########'
+    _help
+    _exit0
+    ;;
+  ## Case: Help (For Administrators)
+  --help-admin)
+    echo `${CDS}`' ###INFO> ######## Show Registration History (Help For Adminstrators) ########'
+    _help_admin
+    _exit0
+    ;;
+  esac
+  shift
+done
+shift
+
+#### Check ExecCode ####
+if [ "${EXECCODE}" = "0" ]; then
+  echo `${CDS}`' !!ERROR> No Argument.'
+  _help
+  _exit1
+fi
+
+
+#### [START] Check ####################################################################
+
+#### Check Env Variable ($G2D_HOME) ####
+## Exec
+ECOUNT=`env | grep G2D_HOME | wc -l 2>/dev/null`
+## on Error --> exit 1
+if [ ${ECOUNT} -eq 0 ]; then
+  echo `${CDS}`' !!ERROR> Env Variable $G2D_HOME Not Found.'
+  _error
+  _exit1
+fi
+
+#### Change Directory ####
+cd ${G2D_HOME}
+
+
+#### [START] Exec #####################################################################
+
+#### Chance Directory ####
+cd ${SRC_RUBY}
+
+#### Exec Ruby ####
+## Search: Show All the Registration Histories (For Operators)
+if [ "${EXECCODE}" = "${GET_NOTDELETED}" ]; then
+  ## Exec Ruby
+  ruby reghistory.rb ${GET_NOTDELETED} ${OFFSET} ${LIMIT}
+## Search: Show All the Registration Histories (For Administrators)
+elif [ "${EXECCODE}" = "${GET_ALL}" ]; then
+  ## Exec Ruby
+  ruby reghistory.rb ${GET_ALL} ${OFFSET} ${LIMIT}
+## Search: Show the Registration History of the Repository
+elif [ "${EXECCODE}" = "${GET_FROM_REPOSITORYCODE}" ]; then
+  ## Exec Ruby
+  ruby reghistory.rb ${GET_FROM_REPOSITORYCODE} ${OPTVALUE} ${OFFSET} ${LIMIT}
+## Delete: Delete the Regist History (DEL_FLAG --> 9)
+elif [ "${EXECCODE}" = "${DELETE}" ]; then
+  ## Exec Ruby
+  ruby reghistory.rb ${DELETE} ${OPTVALUE}
+## Enable: Enable the Regist History (DEL_FLAG --> 0)
+elif [ "${EXECCODE}" = "${ENABLE}" ]; then
+  ## Exec Ruby
+  ruby reghistory.rb ${ENABLE} ${OPTVALUE}
+fi
+
+#### Check Exit Status ####
+EXITSTATUS=$?
+## on Error --> exit 1
+if [ "${EXITSTATUS}" != "0" ]; then
+  _error
+  _exit1
+fi
+
+#### Chance Directory ####
+cd ${G2D_HOME}
+
+
+#### Exit #############################################################################
+
+#### Exit ####
+_exit0
+

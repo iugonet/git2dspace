@@ -1,0 +1,237 @@
+#!/bin/bash
+# ----------------------------------------------------------------------------------- #
+#  repoconf for IUGONET ver 0.10
+#  Released on 2013.04.05, STEL, N.UMEMURA
+# ----------------------------------------------------------------------------------- #
+#  -- INTRODUCTION --
+#  This Script Manage the Repository Setting.
+#
+#  -- HOW TO RUN --
+#  Run this command.
+#  $ ./repoconf [-a|--all] [--active REPOSIROTY_CODE] [--pause REPOSITORY_CODE] [--stop RESPOSITORY_CODE] [-h|--help]
+#  Options:
+#    See Help. ($ ./repoconf -h)
+#
+#  -- MORE DETAILS --
+#  See Operation Manual or Development Manual.
+#
+# ----------------------------------------------------------------------------------- #
+#
+
+#### [START] Define ###################################################################
+
+#### Invariable Parameters ####
+## Env
+SRC_DIR=${G2D_HOME}'/src'
+SRC_RUBY=${SRC_DIR}'/ruby'
+SRC_SHELL=${SRC_DIR}'/shell'
+PID_FILE='g2d.pid'
+## Variables
+EXECCODE='0'
+EXITSTATUS='0'
+## EXECCODE (CONST VARIABLES)
+GET_ALL='5001101'
+GET_NOTDELETED='5001102'
+REGIST_INTO_ACTIVE='5001201'
+REGIST_INTO_PAUSE='5001202'
+REGIST_INTO_STOP='5001203'
+DELETE='5001301'
+## Utils
+CDS=${SRC_SHELL}'/lib/CreateDate.sh'
+
+#### Function ####
+_help() {
+  echo `${CDS}`' ###HELP> Usage:'
+  echo `${CDS}`' ###HELP>   $ ./repoconf [-a|--all] [--active REPOSITORY_CODE] [--pause REPOSITORY_CODE] [--stop REPOSITORY_CODE] [-h|--help]'
+  echo `${CDS}`' ###HELP> Options:'
+  echo `${CDS}`' ###HELP>   -a, --all                   : Show the List of Repositories.'
+  echo `${CDS}`' ###HELP>   --active [REPOSITORY_CODE]  : Change the Repository Actively.'
+  echo `${CDS}`' ###HELP>   --pause  [REPOSITORY_CODE]  : Change the Repository into Pause.'
+  echo `${CDS}`' ###HELP>   --stop   [REPOSITORY_CODE]  : Change the Repository into Stop.'
+  echo `${CDS}`' ###HELP>   -h, --help                  : Show Help.'
+  echo `${CDS}`' ###HELP> Others:'
+  echo `${CDS}`' ###HELP>   See Operation Maunal for Details.'
+  echo `${CDS}`' ###HELP> '
+}
+_help_admin() {
+  echo `${CDS}`' ###HELP> Usage:'
+  echo `${CDS}`' ###HELP>   $ ./repoconf [-a|--all] [--admin] [--active REPOSITORY_CODE] [--pause REPOSITORY_CODE] [--stop REPOSITORY_CODE] [-h|--help] [--help-admin]'
+  echo `${CDS}`' ###HELP> Options: (*: For Administrators Only):'
+  echo `${CDS}`' ###HELP>   -a, --all                   : Show the List of Repositories (Expect Deleted Records).'
+  echo `${CDS}`' ###HELP> * --admin                     : Show the List of Repositories (Include Deleted Records).'
+  echo `${CDS}`' ###HELP>   --active [REPOSITORY_CODE]  : Change the Repository Actively.'
+  echo `${CDS}`' ###HELP>   --pause  [REPOSITORY_CODE]  : Change the Repository into Pause.'
+  echo `${CDS}`' ###HELP>   --stop   [REPOSITORY_CODE]  : Change the Repository into Stop.'
+  echo `${CDS}`' ###HELP>   -h, --help                  : Show Help (For Operators).'
+  echo `${CDS}`' ###HELP> * --help-admin                : Show Help (For Administrators).'
+  echo `${CDS}`' ###HELP> Others:'
+  echo `${CDS}`' ###HELP>   See Operation Maunal for Details.'
+  echo `${CDS}`' ###HELP> '
+}
+_error() {
+  echo `${CDS}`' !!ERROR> Progam Exit. See Operation Manual.'
+  echo `${CDS}`' !!ERROR> '
+}
+_end() {
+  echo `${CDS}`' ###INFO> '
+}
+_exit0() {
+  exit 0
+}
+_exit1() {
+  exit 1
+}
+
+
+#### [START] Get Args #################################################################
+
+#### Get Args ####
+ARGS=`getopt -o :ah -l all -l admin -l active: -l pause: -l stop: -l help -l help-admin -- "$@"`
+
+#### Check Args ####
+## Arg Error --> exit 1
+if [ $? -ne 0 ]; then
+  echo `${CDS}`' !!ERROR> Invalid Argument.'
+  _help
+  _exit1
+fi
+
+#### ReSet Args ####
+eval set -- $ARGS
+
+#### Catch Args ####
+until [ $1 = "--" ];
+do
+  case $1 in
+  ## Case: Show the List of Repositories (For Operators)
+  -a|--all)
+    echo `${CDS}`' ###INFO> ######## Show Repository List (All) ########'
+    EXECCODE=${GET_NOTDELETED}
+    ;;
+  ## Case: Show the List of Repositories (For Administrators)
+  --admin)
+    echo `${CDS}`' ###INFO> ######## Show Repository List (For Administrators) ########'
+    EXECCODE=${GET_ALL}
+    ;;
+  ## Case: Change the Repository Actively
+  --active)
+    echo `${CDS}`' ###INFO> ######## Change the Repository Setting ########'
+    OPTVALUE=$2
+    EXECCODE=${REGIST_INTO_ACTIVE}
+    ;;
+  ## Case: Change the Repository into Pause
+  --pause)
+    echo `${CDS}`' ###INFO> ######## Change the Repository Setting ########'
+    OPTVALUE=$2
+    EXECCODE=${REGIST_INTO_PAUSE}
+    ;;
+  ## Case: Change the Repository into Stop
+  --stop)
+    echo `${CDS}`' ###INFO> ######## Change the Repository Setting ########'
+    OPTVALUE=$2
+    EXECCODE=${REGIST_INTO_STOP}
+    ;;
+  ## Case: Help (For Operators)
+  -h|--help)
+    echo `${CDS}`' ###INFO> ######## Show Repository List (Help) ########'
+    _help
+    _exit0
+    ;;
+  ## Case: Help (For Operators)
+  --help-admin)
+    echo `${CDS}`' ###INFO> ######## Show Repository List (Help For Administrators) ########'
+    _help_admin
+    _exit0
+    ;;
+  esac
+  shift
+done
+shift
+
+#### Check ExecCode ####
+if [ "${EXECCODE}" = "0" ]; then
+  echo `${CDS}`' !!ERROR> No Argument.'
+  _help
+  _exit1
+fi
+
+
+#### [START] Check ####################################################################
+
+#### Check Env Variable ($G2D_HOME) ####
+## Exec
+ECOUNT=`env | grep G2D_HOME | wc -l 2>/dev/null`
+## on Error --> exit 1
+if [ ${ECOUNT} -eq 0 ]; then
+  echo `${CDS}`' !!ERROR> Env Variable $G2D_HOME Not Found.'
+  _error
+  _exit1
+fi
+
+#### Change Directory ####
+cd ${G2D_HOME}
+
+#### Check Current Process ####
+## NOTE:
+##   If Running G2D Now, Cannot Change the Setting.
+##   (Read and Help are Possible).
+## Exec
+if [ "${EXECCODE}" = "${REGIST_INTO_ACTIVE}" -o "${EXECCODE}" = "${REGIST_INTO_PAUSE}" -o "${EXECCODE}" = "${REGIST_INTO_STOP}" ]; then
+  if [ -f ${PID_FILE} ]; then
+    PROCESSNUM=`ps -p \`cat ${PID_FILE}\` | wc -l 2>/dev/null`
+    ## Already Running --> exit 1
+    if [ ${PROCESSNUM} -gt 1 ]; then
+      echo `${CDS}`' !!!WARN> Cannot Change the Setting During Running the G2D Process.'
+      echo `${CDS}`' !!!WARN> Please Wait a Few Minutes.'
+      _error
+      _exit1
+    fi
+  fi
+fi
+
+
+#### [START] Exec #####################################################################
+
+#### Chance Directory ####
+cd ${SRC_RUBY}
+
+#### Exec Ruby ####
+## Search: All Repositories (For Developers)
+if [ "${EXECCODE}" = "${GET_ALL}" ]; then
+  ## Exec Ruby
+  ruby repoconf.rb ${GET_ALL}
+## Search: All Repositories (For Operators)
+elif [ "${EXECCODE}" = "${GET_NOTDELETED}" ]; then
+  ## Exec Ruby
+  ruby repoconf.rb ${GET_NOTDELETED}
+## Regist: The Repository Actively
+elif [ "${EXECCODE}" = "${REGIST_INTO_ACTIVE}" ]; then
+  ## Exec Ruby
+  ruby repoconf.rb ${REGIST_INTO_ACTIVE} ${OPTVALUE}
+## Regist: The Repository into Pause
+elif [ "${EXECCODE}" = "${REGIST_INTO_PAUSE}" ]; then
+  ## Exec Ruby
+  ruby repoconf.rb ${REGIST_INTO_PAUSE} ${OPTVALUE}
+## Regist: The Repository into Stop
+elif [ "${EXECCODE}" = "${REGIST_INTO_STOP}" ]; then
+  ## Exec Ruby
+  ruby repoconf.rb ${REGIST_INTO_STOP} ${OPTVALUE}
+fi
+
+#### Check Exit Status ####
+EXITSTATUS=$?
+## on Error --> exit 1
+if [ "${EXITSTATUS}" != "0" ]; then
+  _error
+  _exit1
+fi
+
+#### Chance Directory ####
+cd ${G2D_HOME}
+
+
+#### Exit #############################################################################
+
+#### Exit ####
+_exit0
+

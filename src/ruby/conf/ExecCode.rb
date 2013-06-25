@@ -1,0 +1,192 @@
+# -*- coding : utf-8 -*-
+
+## ------------------------------------------------------------------ ##
+## [ExecCode.rb]                                                      ##
+## ------------------------------------------------------------------ ##
+##                                                                    ##
+##                                                                    ##
+##                                                                    ##
+##                                                                    ##
+## ------------------------------------------------------------------ ##
+
+class ExecCode
+
+
+  #### [MAIN ARGS] #####################################################
+  ## EXEC CODE ##
+  MAIN_REGISTALL  = "000001"
+  MAIN_REGISTSYNC = "000002"
+  ## NOTE ##
+  # - MAIN_REGISTALL : REGIST ALL METATADA
+  # - MAIN_REGISTSYNC: RRGIST SYNCHRONIZED METADATA
+
+
+  #### [Controller: main1/AdminDBController] ###########################
+  ## RESTORE ##
+  ADMINDB_RESTORE_COMMUNITY  = "1001101"
+  ADMINDB_RESTORE_COLLECTION = "1001102"
+  ADMINDB_RESTORE_METADATA   = "1001103"
+  ## NOTE ##
+  # - ADMINDB_RESTORE_COMMUNITY  : RESTORE COMMUNITIES
+  # - ADMINDB_RESTORE_COLLECTION : RESTORE COLLECTIONS
+  # - ADMINDB_RESTORE_METADATA   : RESTORE METADATA (RESOURCE-ID)
+
+
+  #### [Controller: main1/RegistController] ############################
+  ## REGIST ##
+  REGIST_ADD_FORCED      = "1002101"
+  REGIST_ADD_AND_MODIFY  = "1002102"
+  REGIST_DELETE          = "1002103"
+  ## NOTE ##
+  # - REGIST_ADD_FORCED     : ADD METADATA FORCED
+  # - REGIST_ADD_AND_MODIFY : ADD OR MODIFY METADATA
+  # - REGIST_ADD_FORCED     : DELETE METADATA
+
+
+  #### [Controller: main2/RepoConfController] ##########################
+  ## SEARCH ##
+  REPOCONF_GET_ALL            = "5001101"
+  REPOCONF_GET_NOTDELETED     = "5001102"
+  ## REGIST ##
+  REPOCONF_REGIST_INTO_ACTIVE = "5001201"
+  REPOCONF_REGIST_INTO_PAUSE  = "5001202"
+  REPOCONF_REGIST_INTO_STOP   = "5001203"
+  ## DELETE ##
+  REPOCONF_DELETE             = "5001301"
+  ## NOTE ##
+  #
+  #
+
+
+  #### [Controller: main2/RegistHistory] ###############################
+  ## SEARCH ##
+  REGHISTORY_GET_ALL          = "5002101"
+  REGHISTORY_GET_NOTDELETED   = "5002102"
+  REGHISTORY_GET_RECENTONE    = "5002103"
+  REGHISTORY_GET_FROM_REPOSITORYCODE = "5002104"
+  ## DELETE ##
+  REGHISTORY_DELETE           = "5002301"
+  REGHISTORY_ENABLE           = "5002302"
+  ## NOTE ##
+  #
+  #
+
+
+  #### [API: Repository] ###############################################
+  ## SEARCH ##
+  REPOSITORY_GET_ALL        = "2001101"
+  REPOSITORY_GET_NOTDELETED = "2001102"
+  REPOSITORY_GET_ACTIVE     = "2001103"
+  REPOSITORY_GET_SUSPEND    = "2001104"
+  REPOSITORY_GET_AANDS      = "2001105"
+  REPOSITORY_GET_FROM_REPOSITORYCODE = "2001106"
+  ## REGIST ##
+  REPOSITORY_REGIST_INTO_ACTIVE = "2001201"
+  REPOSITORY_REGIST_INTO_PAUSE  = "2001202"
+  REPOSITORY_REGIST_INTO_STOP   = "2001203"
+  ## NOTE ##
+  # - REPOSITORY_GET_ALL        : GET ALL RECORDS (CONTAINS DELETED RECORDS)
+  # - REPOSITORY_GET_NOTDELETED : EXPECT DELETED RECORDS
+  # - REPOSITORY_GET_ACTIVE     : ONLY THE RECORDS GIVEN ACTIVE CODE
+  # - REPOSITORY_GET_SUSPEND    : ONLY THE RECORDS GIVEN SUSPEND CODE
+  # - REPOSITORY_GET_AANDS      : ONLY THE RECORDS GIVEN ACTIVE OR SUSPEND CODE
+
+
+  #### [API: Community] ################################################
+  ## SEARCH ##
+  COMMUNITY_GET_ALL         = "2002101"
+  COMMUNITY_GET_NOTDELETED  = "2002102"
+  COMMUNITY_GET_FROM_NAME   = "2002103"
+  ## REGIST ##
+  COMMUNITY_REGIST_ALL      = "2002201"
+  ## OTHERS ##
+  COMMUNITY_RESTORE         = "2002301"
+  ## NOTE ##
+  # - COMMUNITY_GET_ALL        : GET ALL RECORDS (CONTAINS DELETED RECORDS)
+  # - COMMUNITY_GET_NOTDELETED : EXPECT DELETED RECORDS
+  # - COMMUNITY_GET_FROM_NAME  : SEARCH FROM THE COMMUNITY NAME
+  # - COMMUNITY_REGIST_ALL     : REGIST COMMUNITIES TO ADMIN-DB
+  # - COMMUNITY_RESTORE        : RESTORE COMMUNITIES FROM DSPACE TO ADMIN-DB
+
+
+  #### [API: Collection] ###############################################
+  ## SEARCH ##
+  COLLECTION_GET_ALL        = "2003101"
+  COLLECTION_GET_NOTDELETED = "2003102"
+  COLLECTION_GET_FROM_NAME  = "2003103"
+  ## REGIST ##
+  COLLECTION_REGIST_ALL     = "2003201"
+  ## OTHERS ##
+  COLLECTION_RESTORE        = "2003301"
+  ## NOTE ##
+  # - COLLECTION_GET_ALL        : GET ALL RECORDS (CONTAINS DELETED RECORDS)
+  # - COLLECTION_GET_NOTDELETED : EXPECT DELETED RECORDS
+  # - COLLECTION_GET_FROM_NAME  : SEARCH FROM THE COLLECTION NAME
+  # - COLLECTION_REGIST_ALL     : REGIST COLLECTIONS TO ADMIN-DB
+  # - COLLECTION_RESTORE        : RESTORE COLLECTIONS FROM DSPACE TO ADMIN-DB
+
+
+  #### [API: Metadata] #################################################
+  ## SEARCH ##
+# METADATA_GET_ALL             = "2004101"
+# METADATA_GET_NOTDELETED      = "2004102"
+  METADATA_GET_FROM_RESOURCEID = "2004103"
+  ## REGIST ##
+  ## OTHERS ##
+  METADATA_RESTORE             = "2004301"
+  ## NOTE ##
+  # - METADATA_GET_ALL        : GET ALL RECORDS (CONTAINS DELETED RECORDS)
+  # - METADATA_GET_NOTDELETED : EXPECT DELETED RECORDS
+  # - METADATA_GET_FROM_RESOURCEID : SEARCH FROM THE RESOURCEID
+  # - METADATA_RESTORE        : RESTORE METADATA'S RESOURCEID FROM DSPACE TO ADMIN-DB
+
+
+  #### [API: RegistStatus] #############################################
+  ## SEARCH ##
+  REGISTSTATUS_GET_ALL        = "2005101"
+  REGISTSTATUS_GET_NOTDELETED = "2005102"
+  REGISTSTATUS_GET_RECENTONE  = "2005103"
+  REGISTSTATUS_GET_FROM_REPOSITORYCODE = "2005104"
+  REGISTSTATUS_GET_FROM_REGISTID       = "2005105"
+  ## REGIST ##
+  REGISTSTATUS_REGIST_S0      = "2005201"
+  REGISTSTATUS_REGIST_S1      = "2005202"
+  REGISTSTATUS_REGIST_S2      = "2005203"
+  REGISTSTATUS_REGIST_S8      = "2005208"
+  REGISTSTATUS_REGIST_S9      = "2005209"
+  ## DELETE ##
+  REGISTSTATUS_DELETE         = "2005301"
+  REGISTSTATUS_ENABLE         = "2005302"
+  ## NOTE ##
+  # - REGISTSTATUS_GET_ALL        : GET ALL RECORDS (CONTAINS DELETED RECORDS)
+  # - REGISTSTATUS_GET_NOTDELETED : EXPECT DELETED RECORDS
+  # - REGISTSTATUS_GET_RECENTONE  : GET MOST RECENT ONE
+  # - REGISTSTATUS_GET_FROM_REPOSITORYCODE : SEARCH FROM THE REPOSITORYCODE
+  # - REGISTSTATUS_REGIST_S0 : REGIST_STATUS_CODE --> 0
+  # - REGISTSTATUS_REGIST_S1 : REGIST_STATUS_CODE --> 1
+  # - REGISTSTATUS_REGIST_S2 : REGIST_STATUS_CODE --> 2
+  # - REGISTSTATUS_REGIST_S8 : REGIST_STATUS_CODE --> 8
+  # - REGISTSTATUS_REGIST_S9 : REGIST_STATUS_CODE --> 9
+
+
+  #### [API: Handle] ###################################################
+  ## SEARCH ##
+  GET_FROM_HANDLEID    = "2006101"
+  GET_FROM_HANDLEID_AND_RESOURCETYPEID = "2006102"
+  ## REGIST ##
+  ## NOTE ##
+  # - GET_FROM_HANDLEID   : SEARCH FROM HANDLEID
+  # - GET_FROM_RESOURCEID : SEARCH FROM RESOURCEID
+  # - GET_FROM_HANDLEID_AND_RESOURCETYPEID : SEARCH FROM HANDLEID AND RESOURCETYPEID
+
+
+
+  ## ---------------------------------------------------------------- ##
+  ## [initialize]                                                     ##
+  ## ---------------------------------------------------------------- ##
+  def initialize
+  end
+
+
+end
+
